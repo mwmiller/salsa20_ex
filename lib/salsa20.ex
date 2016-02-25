@@ -73,4 +73,9 @@ defmodule Salsa20 do
     hash(s0<>k0<>s1<>n<>s2<>k1<>s3)
   end
 
+  def block(k,v,n) do
+    c = extract_chars(n,8,[]) |> Enum.join
+    expand(k,v<>c)
+  end
+
 end
