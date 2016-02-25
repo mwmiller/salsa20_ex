@@ -1,5 +1,4 @@
-# Salsa20
+# Salsa20 for Elixir
 
-Still under heavy developement, implementating:
 http://cr.yp.to/snuffle/spec.pdf
 
