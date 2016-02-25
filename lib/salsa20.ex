@@ -73,6 +73,12 @@ defmodule Salsa20 do
     hash(s0<>k0<>s1<>n<>s2<>k1<>s3)
   end
 
+  def encrypt(m,k,v), do: encrypt_bytes(m,<<>>,{k,v,0},[])
+
+  def encrypt_bytes(<<>>,_b,c, acc), do: acc |> Enum.reverse |> Enum.join
+  def encrypt_bytes(m,<<>>,{k,v,n}, acc), do: encrypt_bytes(m,block(k,v,n+1),{k,v,n+1},acc)
+  def encrypt_bytes(<<m,restm::binary>>, <<b,restb::binary>>,c,acc), do: encrypt_bytes(restm, restb, c, [<< bxor(m,b) >> | acc])
+
   def block(k,v,n) do
     c = extract_chars(n,8,[]) |> Enum.join
     expand(k,v<>c)
