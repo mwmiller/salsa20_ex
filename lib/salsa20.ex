@@ -29,10 +29,10 @@ defmodule Salsa20 do
 
   * The shared key
   * The session nonce
-  * The last used block number
-  * The unused portion of the above block number
+  * The next block number
+  * The unused portion of the current block
 
-  Note that block 0 is undefined, so the initial state is `{k,v,0,""}`
+  Starting from block 0 the initial state is `{k,v,0,""}`
   """
   @type salsa_parameters :: {key, nonce, non_neg_integer, binary}
 
@@ -124,9 +124,9 @@ defmodule Salsa20 do
   The operations are symmetric, so if `crypt(m,k,v) = c`, then `crypt(c,k,v) = m`
   """
 
-  @spec crypt(binary, key, nonce) :: binary
-  def crypt(m,k,v) do
-    {s, _p} = crypt_bytes(m,{k,v,0,""},[])
+  @spec crypt(binary, key, nonce, non_neg_integer) :: binary
+  def crypt(m,k,v,b \\ 0) do
+    {s, _p} = crypt_bytes(m,{k,v,b,""},[])
     s
   end
 
@@ -140,7 +140,7 @@ defmodule Salsa20 do
 
   @spec crypt_bytes(binary, salsa_parameters, [binary]) :: {binary, salsa_parameters}
   def crypt_bytes(<<>>,p,acc), do: {(acc |> Enum.reverse |> Enum.join), p}
-  def crypt_bytes(m,{k,v,n,<<>>}, acc), do: crypt_bytes(m,{k,v,n+1,block(k,v,n+1)},acc)
+  def crypt_bytes(m,{k,v,n,<<>>}, acc), do: crypt_bytes(m,{k,v,n+1,block(k,v,n)},acc)
   def crypt_bytes(<<m,restm::binary>>, {k,v,n,<<b,restb::binary>>},acc), do: crypt_bytes(restm, {k,v,n,restb}, [<< bxor(m,b) >> | acc])
 
   defp block(k,v,n) do

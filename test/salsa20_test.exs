@@ -9,7 +9,7 @@ defmodule Salsa20Test do
 
     encrypted = crypt("secret message", k, v)
 
-    assert encrypted == <<32, 136, 123, 6, 144, 168, 3, 37, 50, 103, 126, 45, 240, 155>>
+    assert encrypted == <<91, 209, 80, 89, 195, 39, 221, 94, 63, 143, 193, 245, 205, 14>>
     assert encrypted |> crypt(k,v) == "secret message"
 
   end
@@ -21,7 +21,7 @@ defmodule Salsa20Test do
     {s,p} = crypt_bytes("sec", {k,v,0,""},[])
     {full_message, _,} = crypt_bytes("ret message", p, [s])
 
-    assert full_message == <<32, 136, 123, 6, 144, 168, 3, 37, 50, 103, 126, 45, 240, 155>>
+    assert full_message == <<91, 209, 80, 89, 195, 39, 221, 94, 63, 143, 193, 245, 205, 14>>
   end
 
 end
