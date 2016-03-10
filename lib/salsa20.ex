@@ -76,25 +76,23 @@ defmodule Salsa20 do
   def doublerounds(x, n), do: x |> doubleround |> doublerounds(n-1)
 
   @doc false
-  def littleendian(<< b0,b1,b2,b3 >>),  do: b0 + (b1 <<< 8) + (b2 <<< 16) + (b3 <<< 24)
-  @doc false
-  def littleendian_inv(i),              do: extract_chars(i,4,[]) |> Enum.join
-  defp extract_chars(_i, 0, acc),       do: acc
-  defp extract_chars(i, n, acc),        do: extract_chars(i, n-1, [<< (bsr(i,8*(n-1)) &&& 0xff) >> | acc ])
-  defp extract_binary(i,n),             do: extract_chars(i,n,[]) |> Enum.reverse |> Enum.join
+  def littleendian_inv(i), do: i |> :binary.encode_unsigned(:little) |> pad(4)
+  def pad(s,n) when (byte_size(s) |> rem(n)) == 0, do: s
+  def pad(s,n), do: pad(s<><<0>>,n)
 
   @doc false
-  def hash(b, rounds \\ 1) when is_binary(b) and byte_size(b) == 64, do: hash_rounds(b, rounds)
+  def hash(b, rounds \\ 1) when is_binary(b) and byte_size(b) == 64, do: b |> words_as_ints([]) |> hash_rounds(rounds)
 
-  defp hash_rounds(b,0), do: b
-  defp hash_rounds(b,n)  do
-    xs = words_as_ints(b, [])
-    newb = doublerounds(xs, 10) |> Enum.zip(xs) |> Enum.reduce(<<>>,fn({z,x}, acc) ->acc <> (sum(x,z) |> littleendian_inv) end)
-    hash_rounds(newb, n-1)
+  defp hash_rounds(xs,0), do: xs |> Enum.map(&littleendian_inv/1) |> Enum.join
+  defp hash_rounds(xs,n)  do
+    doublerounds(xs, 10)
+    |> Enum.zip(xs)
+    |> Enum.map(fn({z,x}) -> sum(x,z) end)
+    |> hash_rounds(n-1)
   end
 
   defp words_as_ints(<<>>, acc), do: acc |> Enum.reverse
-  defp words_as_ints(<<word::size(32),rest::binary>>, acc), do: words_as_ints(rest, [(word |> extract_binary(4)|> littleendian)|acc])
+  defp words_as_ints(<<word::unsigned-little-integer-size(32),rest::binary>>, acc), do: words_as_ints(rest, [word|acc])
 
   @doc false
   def expand(k,n) when byte_size(k) == 16 and byte_size(n) == 16 do
@@ -144,7 +142,7 @@ defmodule Salsa20 do
   def crypt_bytes(<<m,restm::binary>>, {k,v,n,<<b,restb::binary>>},acc), do: crypt_bytes(restm, {k,v,n,restb}, [<< bxor(m,b) >> | acc])
 
   defp block(k,v,n) do
-    c = extract_chars(n,8,[]) |> Enum.join
+    c = :binary.encode_unsigned(n) |> pad(8) |> binary_part(0,8)
     expand(k,v<>c)
   end
 
