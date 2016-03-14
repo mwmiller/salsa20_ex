@@ -5,7 +5,8 @@ defmodule Salsa20 do
 
   As specified in http://cr.yp.to/snuffle/spec.pdf.
 
-  The calling semantics are still sub-optimal and no performance tuning has been done.
+  Also includes the HSalsa20 hashing function as specified in
+  http://cr.yp.to/highspeed/naclcrypto-20090310.pdf
   """
   import Bitwise
 
@@ -77,18 +78,38 @@ defmodule Salsa20 do
 
   @doc false
   def littleendian_inv(i), do: i |> :binary.encode_unsigned(:little) |> pad(4)
-  def pad(s,n) when (byte_size(s) |> rem(n)) == 0, do: s
-  def pad(s,n), do: pad(s<><<0>>,n)
+  defp pad(s,n) when (byte_size(s) |> rem(n)) == 0, do: s
+  defp pad(s,n), do: pad(s<><<0>>,n)
+
+  @doc """
+  HSalsa20 hash
+
+  The strict specification requires a 32-byte key, but the defined
+  expansion function can be used with a 16-byte key.
+  """
+  @spec hash(key,nonce) :: <<_::32 * 8 >>
+  def hash(k,n) do
+    expand(k,n)
+      |> words_as_ints([])
+      |> doublerounds(10)
+      |> pick_elements
+      |> Enum.join
+  end
+
+  defp pick_elements(zs) do
+      zt = zs |> List.to_tuple
+      [0,5,10,15,6,7,8,9] |> Enum.map(fn n -> elem(zt,n) |> littleendian_inv  end)
+  end
 
   @doc false
-  def hash(b, rounds \\ 1) when is_binary(b) and byte_size(b) == 64, do: b |> words_as_ints([]) |> hash_rounds(rounds)
+  def s20_hash(b, rounds \\ 1) when is_binary(b) and byte_size(b) == 64, do: b |> words_as_ints([]) |> s20_hash_rounds(rounds)
 
-  defp hash_rounds(xs,0), do: xs |> Enum.map(&littleendian_inv/1) |> Enum.join
-  defp hash_rounds(xs,n)  do
+  defp s20_hash_rounds(xs,0), do: xs |> Enum.map(&littleendian_inv/1) |> Enum.join
+  defp s20_hash_rounds(xs,n)  do
     doublerounds(xs, 10)
     |> Enum.zip(xs)
     |> Enum.map(fn({z,x}) -> sum(x,z) end)
-    |> hash_rounds(n-1)
+    |> s20_hash_rounds(n-1)
   end
 
   defp words_as_ints(<<>>, acc), do: acc |> Enum.reverse
@@ -101,7 +122,7 @@ defmodule Salsa20 do
     t2 = << 54, 45, 98,121>>
     t3 = <<116,101, 32,107>>
 
-    hash(t0<>k<>t1<>n<>t2<>k<>t3)
+   t0<>k<>t1<>n<>t2<>k<>t3
   end
 
   def expand(k,n) when byte_size(k) == 32 and byte_size(n) == 16 do
@@ -111,7 +132,7 @@ defmodule Salsa20 do
     s2 = << 50, 45, 98,121>>
     s3 = <<116,101, 32,107>>
 
-    hash(s0<>k0<>s1<>n<>s2<>k1<>s3)
+    s0<>k0<>s1<>n<>s2<>k1<>s3
   end
 
   @doc """
@@ -143,7 +164,7 @@ defmodule Salsa20 do
 
   defp block(k,v,n) do
     c = :binary.encode_unsigned(n) |> pad(8) |> binary_part(0,8)
-    expand(k,v<>c)
+    expand(k,v<>c) |> s20_hash
   end
 
 end
