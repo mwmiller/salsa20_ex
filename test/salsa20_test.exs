@@ -1,5 +1,5 @@
 defmodule Salsa20Test do
-  use PowerAssert
+  use ExUnit.Case
   doctest Salsa20
   import Salsa20
 

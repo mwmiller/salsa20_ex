@@ -18,13 +18,13 @@ defmodule Salsa20 do
 
   32-byte values are to be preferred over 16-byte ones where possible.
   """
-  @type key :: <<_::32 * 8 >> | <<_::16 * 8 >>
+  @type key :: binary
   @typedoc """
   The shared per-session nonce.
 
   By spec, this nonce may be used to encrypt a stream of up to 2^70 bytes.
   """
-  @type nonce :: <<_::8 * 8 >>
+  @type nonce :: binary
   @typedoc """
   The parameters and state of the current session
 
@@ -87,7 +87,7 @@ defmodule Salsa20 do
   The strict specification requires a 32-byte key, but the defined
   expansion function can be used with a 16-byte key.
   """
-  @spec hash(key,nonce) :: <<_::32 * 8 >>
+  @spec hash(key,nonce) :: binary
   def hash(k,n) do
     expand(k,n)
       |> words_as_ints([])
