@@ -3,7 +3,7 @@ defmodule Salsa20.Mixfile do
 
   def project do
     [app: :salsa20,
-     version: "0.3.2",
+     version: "0.3.3",
      elixir: "~> 1.3",
      name: "Salsa20",
      source_url: "https://github.com/mwmiller/salsa20_ex",
@@ -21,7 +21,7 @@ defmodule Salsa20.Mixfile do
   defp deps do
     [
       {:earmark, "~> 1.0", only: :dev},
-      {:ex_doc, "~> 0.13", only: :dev},
+      {:ex_doc, "~> 0.14", only: :dev},
     ]
   end
 
