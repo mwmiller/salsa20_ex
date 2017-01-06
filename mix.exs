@@ -3,15 +3,15 @@ defmodule Salsa20.Mixfile do
 
   def project do
     [app: :salsa20,
-     version: "0.3.3",
-     elixir: "~> 1.3",
+     version: "0.3.4",
+     elixir: "~> 1.4",
      name: "Salsa20",
      source_url: "https://github.com/mwmiller/salsa20_ex",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     description: description,
-     package: package,
-     deps: deps]
+     description: description(),
+     package: package(),
+     deps: deps()]
   end
 
   def application do
