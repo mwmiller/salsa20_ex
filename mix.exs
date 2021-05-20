@@ -4,7 +4,7 @@ defmodule Salsa20.Mixfile do
   def project do
     [
       app: :salsa20,
-      version: "1.0.2",
+      version: "1.0.3",
       elixir: "~> 1.7",
       name: "Salsa20",
       source_url: "https://github.com/mwmiller/salsa20_ex",
