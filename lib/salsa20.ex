@@ -40,10 +40,10 @@ defmodule Salsa20 do
   # This is to allow for testing vs the spec, without confusing consumers.
   @doc false
   def quarterround([y0, y1, y2, y3]) do
-    z1 = y1 ^^^ rotl(sum(y0, y3), 7)
-    z2 = y2 ^^^ rotl(sum(z1, y0), 9)
-    z3 = y3 ^^^ rotl(sum(z2, z1), 13)
-    z0 = y0 ^^^ rotl(sum(z3, z2), 18)
+    z1 = y1 |> bxor(rotl(sum(y0, y3), 7))
+    z2 = y2 |> bxor(rotl(sum(z1, y0), 9))
+    z3 = y3 |> bxor(rotl(sum(z2, z1), 13))
+    z0 = y0 |> bxor(rotl(sum(z3, z2), 18))
 
     [z0, z1, z2, z3]
   end
